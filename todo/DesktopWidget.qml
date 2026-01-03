@@ -156,10 +156,12 @@ DraggableDesktopWidget {
       Layout.fillHeight: true
       visible: expanded
 
-      NBox {
+      Rectangle {
         anchors.fill: parent
         color: root.todoBg
         radius: scaledRadiusM
+        border.color: showBackground ? Color.mOutline : Color.transparent
+        border.width: showBackground ? 1 : 0
       }
 
       Flickable {
