@@ -95,7 +95,7 @@ Item {
               }
             }
           } catch (e) {
-            console.error("Error parsing Steam API response:", e);
+            Logger.e("steam-price-watcher", "Error parsing Steam API response:", e);
             gameData.error = "Erro ao buscar preço";
             root.addGameWithPrice(gameData);
           }
@@ -178,7 +178,7 @@ Item {
       root.watchlist = temp;
       root.gamesWithPrices = temp.slice();
       
-      console.log("Steam Price Watcher: Removed game", appId, "and cleared from notifications");
+      Logger.d("steam-price-watcher", "Removed game", appId, "and cleared from notifications");
     }
     
     refreshPrices();
@@ -193,7 +193,7 @@ Item {
         }
       }
       pluginApi.saveSettings();
-      console.log("Steam Price Watcher: Updated target price for", appId, "to", newPrice);
+      Logger.d("steam-price-watcher", "Updated target price for", appId, "to", newPrice);
       
       // Remove from notified games to allow re-notification
       var notified = pluginApi.pluginSettings.notifiedGames || [];
@@ -316,10 +316,14 @@ Item {
               Layout.preferredHeight: separatorContent.implicitHeight + Style.marginM * 2
               visible: {
                 if (index === 0) return false;
-                var currentAtTarget = modelData.currentPrice && modelData.currentPrice <= modelData.targetPrice;
-                var previousAtTarget = root.gamesWithPrices[index - 1].currentPrice && 
-                                      root.gamesWithPrices[index - 1].currentPrice <= root.gamesWithPrices[index - 1].targetPrice;
-                return previousAtTarget && !currentAtTarget;
+                var currentAtTarget = modelData.currentPrice !== undefined && modelData.currentPrice <= modelData.targetPrice;
+                if (index > 0 && root.gamesWithPrices[index - 1]) {
+                  var previousGame = root.gamesWithPrices[index - 1];
+                  var previousAtTarget = previousGame.currentPrice !== undefined && 
+                                        previousGame.currentPrice <= previousGame.targetPrice;
+                  return previousAtTarget && !currentAtTarget;
+                }
+                return false;
               }
 
               ColumnLayout {
@@ -387,7 +391,7 @@ Item {
                     
                     NIcon {
                       anchors.centerIn: parent
-                      icon: "gamepad"
+                      icon: "package"
                       color: Color.mOnSurfaceVariant
                       pointSize: 24
                     }

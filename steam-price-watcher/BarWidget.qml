@@ -34,25 +34,25 @@ Rectangle {
   property bool loading: false
   property bool hasNotifications: gamesOnTarget.length > 0
 
-  implicitWidth: Math.max(60, isVertical ? (Style.capsuleHeight || 32) : contentWidth)
-  implicitHeight: Math.max(32, isVertical ? contentHeight : (Style.capsuleHeight || 32))
-  radius: Style.radiusM || 8
+  implicitWidth: Math.max(60, isVertical ? Style.capsuleHeight : contentWidth)
+  implicitHeight: Math.max(32, isVertical ? contentHeight : Style.capsuleHeight)
+  radius: Style.radiusM
   color: Style.capsuleColor
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth || 1
+  border.width: Style.capsuleBorderWidth
 
   readonly property real contentWidth: {
-    if (isVertical) return Style.capsuleHeight || 32;
+    if (isVertical) return Style.capsuleHeight;
     var iconWidth = Style.toOdd ? Style.toOdd(Style.capsuleHeight * 0.6) : 20;
-    var textWidth = gamesText ? (gamesText.implicitWidth + (Style.marginS || 4)) : 60;
-    return iconWidth + textWidth + (Style.marginM || 8) * 2 + 24;
+    var textWidth = gamesText ? (gamesText.implicitWidth + Style.marginS) : 60;
+    return iconWidth + textWidth + Style.marginM * 2 + 24;
   }
 
   readonly property real contentHeight: {
-    if (!isVertical) return Style.capsuleHeight || 32;
+    if (!isVertical) return Style.capsuleHeight;
     var iconHeight = Style.toOdd ? Style.toOdd(Style.capsuleHeight * 0.6) : 20;
     var textHeight = gamesText ? gamesText.implicitHeight : 16;
-    return Math.max(iconHeight, textHeight) + (Style.marginS || 4) * 2;
+    return Math.max(iconHeight, textHeight) + Style.marginS * 2;
   }
 
   // Update timer
@@ -71,13 +71,13 @@ Rectangle {
     notifiedGames = cfg.notifiedGames || defaults.notifiedGames || [];
     currency = cfg.currency || defaults.currency || "br";
     currencySymbol = cfg.currencySymbol || defaults.currencySymbol || "R$";
-    console.log("Steam Price Watcher: Configuration updated");
-    console.log("New watchlist length:", watchlist.length);
+    Logger.d("steam-price-watcher", "Configuration updated");
+    Logger.d("steam-price-watcher", "New watchlist length:", watchlist.length);
   }
 
   Component.onCompleted: {
-    console.log("Steam Price Watcher Widget loaded");
-    console.log("Watchlist:", JSON.stringify(watchlist));
+    Logger.i("steam-price-watcher", "Widget loaded");
+    Logger.d("steam-price-watcher", "Watchlist:", JSON.stringify(watchlist));
   }
 
   function checkPrices() {
@@ -124,7 +124,7 @@ Rectangle {
               }
             }
           } catch (e) {
-            console.error("Error parsing Steam API response:", e);
+            Logger.e("steam-price-watcher", "Error parsing Steam API response:", e);
           }
         }
         
@@ -149,12 +149,12 @@ Rectangle {
   }
 
   function addGameOnTarget(game) {
-    console.log("Steam Price Watcher: Game on target detected:", game.name, game.appId);
+    Logger.d("steam-price-watcher", "Game on target detected:", game.name, game.appId);
     
     // Check if already in list
     for (var i = 0; i < gamesOnTarget.length; i++) {
       if (gamesOnTarget[i].appId === game.appId) {
-        console.log("Steam Price Watcher: Game already in target list");
+        Logger.d("steam-price-watcher", "Game already in target list");
         return;
       }
     }
@@ -165,14 +165,14 @@ Rectangle {
     
     // Send notification if not already notified
     var wasNotified = isGameNotified(game.appId);
-    console.log("Steam Price Watcher: Was game already notified?", wasNotified);
+    Logger.d("steam-price-watcher", "Was game already notified?", wasNotified);
     
     if (!wasNotified) {
-      console.log("Steam Price Watcher: Calling sendNotification");
+      Logger.d("steam-price-watcher", "Calling sendNotification");
       sendNotification(game);
       markGameAsNotified(game.appId);
     } else {
-      console.log("Steam Price Watcher: Skipping notification - already notified");
+      Logger.d("steam-price-watcher", "Skipping notification - already notified");
     }
   }
 
@@ -190,7 +190,7 @@ Rectangle {
   }
 
   function sendNotification(game) {
-    console.log("Steam Price Watcher: Sending notification for", game.name);
+    Logger.d("steam-price-watcher", "Sending notification for", game.name);
     
     var symbol = root.currencySymbol;
     
@@ -208,12 +208,12 @@ Rectangle {
       var homeDir = homeProcess.stdout.text.trim();
       var iconPath = homeDir + "/.config/noctalia/plugins/steam-price-watcher/logo-notification.png";
       
-      console.log("Steam Price Watcher: Icon path:", iconPath);
+      Logger.d("steam-price-watcher", "Icon path:", iconPath);
       
       var notifyCmd = '["notify-send", "-a", "Noctalia Shell", "-i", "' + iconPath + '", "🎮 Steam Price Watcher", "' + game.name + ' atingiu ' + symbol + ' ' + game.currentPrice.toFixed(2) + '!\\nPreço alvo: ' + symbol + ' ' + game.targetPrice.toFixed(2) + '"]';
       
       var notifyProcess = Qt.createQmlObject(
-        'import Quickshell.Io; Process { running: true; command: ' + notifyCmd + '; onExited: (exitCode) => { console.log("Steam Price Watcher: Notification sent, exit code:", exitCode); destroy(); } }',
+        'import Quickshell.Io; import qs.Commons; Process { running: true; command: ' + notifyCmd + '; onExited: (exitCode) => { Logger.d("steam-price-watcher", "Notification sent, exit code:", exitCode); destroy(); } }',
         root,
         "notifyProcess"
       );
@@ -257,11 +257,11 @@ Rectangle {
 
   RowLayout {
     anchors.fill: parent
-    anchors.leftMargin: isVertical ? 0 : (Style.marginM || 8)
+    anchors.leftMargin: isVertical ? 0 : Style.marginM
     anchors.rightMargin: isVertical ? 0 : 32
-    anchors.topMargin: isVertical ? (Style.marginS || 4) : 0
-    anchors.bottomMargin: isVertical ? (Style.marginS || 4) : 0
-    spacing: Style.marginS || 4
+    anchors.topMargin: isVertical ? Style.marginS : 0
+    anchors.bottomMargin: isVertical ? Style.marginS : 0
+    spacing: Style.marginS
     visible: !isVertical
 
     Item {
@@ -306,13 +306,12 @@ Rectangle {
       id: gamesText
       text: displayText
       color: hasNotifications ? Color.mPrimary : Color.mOnSurface
-      pointSize: Style.barFontSize || 11
+      pointSize: Style.barFontSize
       applyUiScale: false
       Layout.alignment: Qt.AlignVCenter
     }
   }
 
-  // Mouse interaction
   MouseArea {
     anchors.fill: parent
     hoverEnabled: true
@@ -320,37 +319,10 @@ Rectangle {
     acceptedButtons: Qt.LeftButton
 
     onClicked: {
-      // Try to find an existing panel with this plugin
-      for (var slot = 1; slot <= 2; slot++) {
-        var panel = PanelService.getPanel("pluginPanel" + slot, screen)
-        if (panel && panel.currentPluginId === "steam-price-watcher") {
-          panel.toggle(root)
-          return
-        }
-      }
-
-      // Try to open in an empty panel
-      for (var slot = 1; slot <= 2; slot++) {
-        var panel = PanelService.getPanel("pluginPanel" + slot, screen)
-        if (panel && panel.currentPluginId === "") {
-          panel.currentPluginId = "steam-price-watcher"
-          panel.loadPluginPanel("steam-price-watcher")
-          panel.open(root)
-          return
-        }
-      }
-
-      // Fallback: open in panel1
-      var panel1 = PanelService.getPanel("pluginPanel1", screen)
-      if (panel1) {
-        panel1.unloadPluginPanel()
-        panel1.currentPluginId = "steam-price-watcher"
-        panel1.loadPluginPanel("steam-price-watcher")
-        panel1.open(root)
-      }
+      // Open plugin panel near this widget
+      pluginApi.openPanel(root.screen, root)
     }
-
-    onEntered: {
+     onEntered: {
       if (tooltipText) {
         TooltipService.show(root, tooltipText, BarService.getTooltipDirection());
       }
