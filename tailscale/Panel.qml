@@ -116,8 +116,9 @@ Item {
                     anchors {
                       left: parent.left
                       right: parent.right
+                      top: parent.top
+                      bottom: parent.bottom
                       margins: Style.marginM
-                      verticalCenter: parent.verticalCenter
                     }
                     spacing: Style.marginXS
 
