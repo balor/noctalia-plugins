@@ -107,35 +107,34 @@ Item {
 
                 delegate: Rectangle {
                   Layout.fillWidth: true
-                  Layout.preferredHeight: peerColumn.implicitHeight + Style.marginM * 2
+                  Layout.preferredHeight: peerColumn.implicitHeight
                   color: mouseArea.containsMouse ? Qt.alpha(Color.mPrimary, 0.1) : "transparent"
                   radius: Style.radiusM
 
                   ColumnLayout {
                     id: peerColumn
                     anchors {
-                      left: parent.left
-                      right: parent.right
-                      top: parent.top
-                      bottom: parent.bottom
-                      margins: Style.marginM
+                      fill: parent
+                      margins: Style.marginS
                     }
-                    spacing: Style.marginXS
+                    spacing: 0
 
                     RowLayout {
                       Layout.fillWidth: true
+                      Layout.preferredHeight: hostnameText.implicitHeight
                       spacing: Style.marginS
 
                       NIcon {
                         icon: "laptop"
                         pointSize: Style.fontSizeS
                         color: {
-                          if (modelData.Online) return Color.mSuccess
+                          if (modelData.Online) return Color.mPrimary
                           return Color.mOnSurfaceVariant
                         }
                       }
 
                       NText {
+                        id: hostnameText
                         text: modelData.HostName || modelData.DNSName || "Unknown"
                         pointSize: Style.fontSizeM
                         color: Color.mOnSurface
@@ -148,7 +147,7 @@ Item {
                         text: modelData.Online ? (pluginApi?.tr("panel.online") || "Online") : (pluginApi?.tr("panel.offline") || "Offline")
                         pointSize: Style.fontSizeXS
                         color: {
-                          if (modelData.Online) return Color.mSuccess
+                          if (modelData.Online) return Color.mPrimary
                           return Color.mOnSurfaceVariant
                         }
                       }
@@ -156,7 +155,7 @@ Item {
 
                     NText {
                       Layout.fillWidth: true
-                      Layout.leftMargin: Style.fontSizeS + Style.marginS
+                      Layout.preferredHeight: visible ? implicitHeight : 0
                       text: {
                         var ips = []
                         if (modelData.TailscaleIPs && modelData.TailscaleIPs.length > 0) {
