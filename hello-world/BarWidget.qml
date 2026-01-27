@@ -56,8 +56,8 @@ Item {
         visible: !isVertical
         text: root.message
         color: Color.mOnPrimary
-        pointSize: Style.barFontSize
-        font.weight: Font.Medium
+        pointSize: root.barFontSize
+        applyUiScale: false
       }
     }
   }
